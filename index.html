@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minecraft 3D Web Edition</title>
+  <meta name="description" content="A feature-rich 3D Minecraft voxel game with procedural terrain, block mining and building, day/night cycle, sound effects, and inventory.">
+  <link rel="stylesheet" href="style.css">
+  <!-- Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- Crosshair -->
+    <div id="crosshair"></div>
+
+    <!-- Underwater filter effect -->
+    <div id="underwater-tint"></div>
+
+    <!-- HUD Overlay -->
+    <div id="hud">
+      <!-- Top Bar: Debug / Stats info -->
+      <div id="debug-info">
+        <div><span class="badge">FPS</span> 60</div>
+        <div>XYZ: 0.0 / 22.0 / 0.0</div>
+        <div>Facing: South (+Z)</div>
+        <div>Mode: Survival</div>
+      </div>
+
+      <!-- Quick Controls Hint -->
+      <div id="controls-hint">
+        <div><kbd>WASD</kbd> Move &bull; <kbd>Space</kbd> Jump</div>
+        <div><kbd>Left Click</kbd> Mine / Punch</div>
+        <div><kbd>Right Click</kbd> Place Block</div>
+        <div><kbd>1-9</kbd> / <kbd>Scroll</kbd> Hotbar</div>
+        <div><kbd>E</kbd> All Blocks &bull; <kbd>F</kbd> Fly</div>
+        <div><kbd>T</kbd> Chat / Commands</div>
+      </div>
+
+      <!-- Toast Notification -->
+      <div id="toast">Ready to Explore!</div>
+
+      <!-- Chat and Console output -->
+      <div id="chat-box">
+        <div id="chat-messages">
+          <div class="chat-msg system">★ Welcome to Minecraft 3D Web! Press 'E' for inventory, 'F' to fly!</div>
+          <div class="chat-msg system">★ Left click TNT to ignite it! Press 'T' for commands.</div>
+        </div>
+        <div id="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Press T or Enter to type (/time day, /fly, /tp)..." autocomplete="off" />
+        </div>
+      </div>
+
+      <!-- Bottom HUD Container -->
+      <div id="bottom-bar">
+        <!-- Selected Block Name Announcement -->
+        <div id="selected-block-name">Grass Block</div>
+
+        <!-- Vitals: Hearts and Hunger -->
+        <div id="vitals-bar">
+          <div class="hearts-row">
+            <!-- 10 Hearts -->
+            <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff2222" stroke="#440000" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff2222" stroke="#440000" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff2222" stroke="#440000" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff2222" stroke="#440000" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff2222" stroke="#440000" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff2222" stroke="#440000" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff2222" stroke="#440000" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff2222" stroke="#440000" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff2222" stroke="#440000" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff2222" stroke="#440000" stroke-width="1.5" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          </div>
+          <div class="food-row">
+            <!-- 10 Drumsticks -->
+            <svg class="food-icon" viewBox="0 0 24 24"><path fill="#bb6622" stroke="#442200" stroke-width="1.5" d="M18.5 3.5c-2.5 0-4.5 1.5-5.5 3.5l-3 3-3.5-3.5a2 2 0 10-3 3l3.5 3.5-3 3c-2 2-2 5 0 7s5 2 7 0l3-3 3.5 3.5a2 2 0 103-3l-3.5-3.5 3-3c2-1 3.5-3 3.5-5.5z"/></svg>
+            <svg class="food-icon" viewBox="0 0 24 24"><path fill="#bb6622" stroke="#442200" stroke-width="1.5" d="M18.5 3.5c-2.5 0-4.5 1.5-5.5 3.5l-3 3-3.5-3.5a2 2 0 10-3 3l3.5 3.5-3 3c-2 2-2 5 0 7s5 2 7 0l3-3 3.5 3.5a2 2 0 103-3l-3.5-3.5 3-3c2-1 3.5-3 3.5-5.5z"/></svg>
+            <svg class="food-icon" viewBox="0 0 24 24"><path fill="#bb6622" stroke="#442200" stroke-width="1.5" d="M18.5 3.5c-2.5 0-4.5 1.5-5.5 3.5l-3 3-3.5-3.5a2 2 0 10-3 3l3.5 3.5-3 3c-2 2-2 5 0 7s5 2 7 0l3-3 3.5 3.5a2 2 0 103-3l-3.5-3.5 3-3c2-1 3.5-3 3.5-5.5z"/></svg>
+            <svg class="food-icon" viewBox="0 0 24 24"><path fill="#bb6622" stroke="#442200" stroke-width="1.5" d="M18.5 3.5c-2.5 0-4.5 1.5-5.5 3.5l-3 3-3.5-3.5a2 2 0 10-3 3l3.5 3.5-3 3c-2 2-2 5 0 7s5 2 7 0l3-3 3.5 3.5a2 2 0 103-3l-3.5-3.5 3-3c2-1 3.5-3 3.5-5.5z"/></svg>
+            <svg class="food-icon" viewBox="0 0 24 24"><path fill="#bb6622" stroke="#442200" stroke-width="1.5" d="M18.5 3.5c-2.5 0-4.5 1.5-5.5 3.5l-3 3-3.5-3.5a2 2 0 10-3 3l3.5 3.5-3 3c-2 2-2 5 0 7s5 2 7 0l3-3 3.5 3.5a2 2 0 103-3l-3.5-3.5 3-3c2-1 3.5-3 3.5-5.5z"/></svg>
+            <svg class="food-icon" viewBox="0 0 24 24"><path fill="#bb6622" stroke="#442200" stroke-width="1.5" d="M18.5 3.5c-2.5 0-4.5 1.5-5.5 3.5l-3 3-3.5-3.5a2 2 0 10-3 3l3.5 3.5-3 3c-2 2-2 5 0 7s5 2 7 0l3-3 3.5 3.5a2 2 0 103-3l-3.5-3.5 3-3c2-1 3.5-3 3.5-5.5z"/></svg>
+            <svg class="food-icon" viewBox="0 0 24 24"><path fill="#bb6622" stroke="#442200" stroke-width="1.5" d="M18.5 3.5c-2.5 0-4.5 1.5-5.5 3.5l-3 3-3.5-3.5a2 2 0 10-3 3l3.5 3.5-3 3c-2 2-2 5 0 7s5 2 7 0l3-3 3.5 3.5a2 2 0 103-3l-3.5-3.5 3-3c2-1 3.5-3 3.5-5.5z"/></svg>
+            <svg class="food-icon" viewBox="0 0 24 24"><path fill="#bb6622" stroke="#442200" stroke-width="1.5" d="M18.5 3.5c-2.5 0-4.5 1.5-5.5 3.5l-3 3-3.5-3.5a2 2 0 10-3 3l3.5 3.5-3 3c-2 2-2 5 0 7s5 2 7 0l3-3 3.5 3.5a2 2 0 103-3l-3.5-3.5 3-3c2-1 3.5-3 3.5-5.5z"/></svg>
+            <svg class="food-icon" viewBox="0 0 24 24"><path fill="#bb6622" stroke="#442200" stroke-width="1.5" d="M18.5 3.5c-2.5 0-4.5 1.5-5.5 3.5l-3 3-3.5-3.5a2 2 0 10-3 3l3.5 3.5-3 3c-2 2-2 5 0 7s5 2 7 0l3-3 3.5 3.5a2 2 0 103-3l-3.5-3.5 3-3c2-1 3.5-3 3.5-5.5z"/></svg>
+            <svg class="food-icon" viewBox="0 0 24 24"><path fill="#bb6622" stroke="#442200" stroke-width="1.5" d="M18.5 3.5c-2.5 0-4.5 1.5-5.5 3.5l-3 3-3.5-3.5a2 2 0 10-3 3l3.5 3.5-3 3c-2 2-2 5 0 7s5 2 7 0l3-3 3.5 3.5a2 2 0 103-3l-3.5-3.5 3-3c2-1 3.5-3 3.5-5.5z"/></svg>
+          </div>
+        </div>
+
+        <!-- 9-Slot Hotbar -->
+        <div id="hotbar"></div>
+      </div>
+    </div>
+
+    <!-- Start / Title Screen Overlay -->
+    <div id="start-screen" class="overlay-screen">
+      <div class="menu-card">
+        <h1>MINECRAFT</h1>
+        <div class="menu-subtitle">3D WEB EDITION &bull; UNLIMITED CREATIVITY</div>
+
+        <div class="controls-grid">
+          <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Walk</div>
+          <div><kbd>Space</kbd> Jump</div>
+          <div><kbd>Left Click</kbd> Break Block</div>
+          <div><kbd>Right Click</kbd> Place Block</div>
+          <div><kbd>1-9</kbd> / <kbd>Scroll</kbd> Select Item</div>
+          <div><kbd>E</kbd> All Blocks Inventory</div>
+          <div><kbd>F</kbd> Toggle Fly Mode</div>
+          <div><kbd>T</kbd> Chat / Commands</div>
+        </div>
+
+        <div>
+          <button id="play-btn" class="mc-btn mc-btn-primary">▶ ENTER WORLD</button>
+        </div>
+        <p style="margin-top: 14px; font-size: 15px; color: #444;">
+          Click inside the screen anytime to lock your mouse look. Press <kbd>ESC</kbd> to pause.
+        </p>
+      </div>
+    </div>
+
+    <!-- Pause Menu Modal -->
+    <div id="pause-screen" class="overlay-screen hidden">
+      <div class="menu-card">
+        <h1>GAME PAUSED</h1>
+        <div class="menu-subtitle">Game Menu</div>
+
+        <div style="margin: 20px 0;">
+          <div class="settings-row">
+            <span>Field of View (FOV):</span>
+            <input type="range" id="fov-slider" min="50" max="100" value="75">
+          </div>
+          <div class="settings-row">
+            <span>Sound Volume:</span>
+            <input type="range" id="vol-slider" min="0" max="100" value="70">
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button id="resume-btn" class="mc-btn mc-btn-primary">Back to Game</button>
+          <div style="display: flex; justify-content: center; gap: 10px;">
+            <button id="save-btn" class="mc-btn">💾 Save World</button>
+            <button id="reset-btn" class="mc-btn">🔄 Reset World</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Creative Inventory Modal (E Key) -->
+    <div id="inventory-modal" class="hidden">
+      <div class="inventory-panel">
+        <div class="inventory-header">
+          <h2>CREATIVE INVENTORY</h2>
+          <button id="inventory-close-btn" class="inventory-close">✕</button>
+        </div>
+        <div style="font-size: 16px; color: #444; margin-bottom: 10px;">
+          Click any block to place into active hotbar slot:
+        </div>
+        <div id="inventory-grid" class="inventory-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Scripts in correct dependency order -->
+  <script src="js/textures.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
