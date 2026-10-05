@@ -316,12 +316,26 @@ class MinecraftGame {
       if (e.code === 'KeyE') {
         if (invModal.classList.contains('hidden')) {
           invModal.classList.remove('hidden');
+          try { document.exitPointerLock(); } catch(err) {}
+          if (this.player) {
+            this.player.isLocked = false;
+            this.player.updateCursorHUD();
+          }
         } else {
           invModal.classList.add('hidden');
         }
       } else if (e.code === 'KeyX' && !invModal.classList.contains('hidden')) {
         // Pressing X closes inventory
         invModal.classList.add('hidden');
+      }
+    });
+
+    // Make sure cursor is always free when hovering inside inventory
+    invModal.addEventListener('mouseenter', () => {
+      try { document.exitPointerLock(); } catch(err) {}
+      if (this.player) {
+        this.player.isLocked = false;
+        this.player.updateCursorHUD();
       }
     });
 

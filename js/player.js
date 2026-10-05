@@ -137,9 +137,15 @@ class PlayerController {
     window.addEventListener('keydown', (e) => {
       if (document.activeElement.tagName === 'INPUT') return;
 
-      if (e.code === 'KeyC' || e.code === 'AltLeft' || e.code === 'AltRight') {
+      // Press Alt or C to guarantee cursor is never locked
+      if (e.key === 'Alt' || e.code === 'AltLeft' || e.code === 'AltRight' || e.code === 'KeyC') {
         e.preventDefault();
-        this.toggleCursorMode();
+        try { document.exitPointerLock(); } catch(err) {}
+        this.isLocked = false;
+        this.updateCursorHUD();
+        if (window.showToast) {
+          window.showToast('🖱️ Kursor Bebas / Unlocked (Alt)');
+        }
         return;
       }
 
