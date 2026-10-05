@@ -324,8 +324,8 @@ class MinecraftGame {
         } else {
           invModal.classList.add('hidden');
         }
-      } else if (e.code === 'KeyX' && !invModal.classList.contains('hidden')) {
-        // Pressing X closes inventory
+      } else if ((e.code === 'KeyX' || e.code === 'KeyP') && !invModal.classList.contains('hidden')) {
+        // Pressing P or X closes inventory
         invModal.classList.add('hidden');
       }
     });
@@ -606,7 +606,7 @@ class MinecraftGame {
           } else if (cmd === 'save') {
             this.world.saveToStorage();
             addMessage('World saved to browser storage!', 'command');
-          } else if (cmd === 'x' || cmd === 'close') {
+          } else if (cmd === 'p' || cmd === 'x' || cmd === 'close') {
             const invModal = document.getElementById('inventory-modal');
             invModal.classList.add('hidden');
             addMessage('Closed inventory / menu', 'command');
@@ -637,7 +637,7 @@ class MinecraftGame {
               addMessage(`Block '${itemQuery}' not found. Try: diamond, tnt, glowstone, gold, obsidian, etc.`, 'system');
             }
           } else {
-            addMessage(`Unknown command: ${cmd}. Available: /x, /inv, /clear, /give <block>, /time day|night, /fly, /tp X Y Z, /save`, 'system');
+            addMessage(`Unknown command: ${cmd}. Available: /p, /x, /inv, /clear, /give <block>, /time day|night, /fly, /tp X Y Z, /save`, 'system');
           }
         }
       }

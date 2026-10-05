@@ -22,11 +22,11 @@ A full-featured 3D voxel sandbox game built with JavaScript, Three.js, and Web A
 - **Right Click**: Pasang blok yang dipilih
 - **1-9 / Scroll Wheel**: Select hotbar item
 - **E**: Buka Creative Inventory
-- **X** / **Esc**: Tutup (X) Inventory
+- **P** / **X** / **Esc**: Tutup Inventory (Tekan tombol **P**)
 - **Alt** / **C**: Toggle Kursor Bebas / Terkunci
 - **F**: Toggle Fly Mode
 - **T** atau **/**: Buka Chat / Perintah:
-  - `/x` atau `/close` — Tutup inventory
+  - `/p`, `/x`, atau `/close` — Tutup inventory
   - `/inv` atau `/inventory` — Buka creative inventory
   - `/clear` atau `/clearinv` — Kosongkan/reset hotbar & chat
   - `/give <nama_blok>` — Beri blok (cth: `/give diamond`, `/give tnt`)
