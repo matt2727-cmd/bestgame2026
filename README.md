@@ -19,10 +19,20 @@ A full-featured 3D voxel sandbox game built with JavaScript, Three.js, and Web A
 - **Left Click**: Mine / Break block / Ignite TNT
 - **Right Click**: Place selected block
 - **1-9 / Scroll Wheel**: Select hotbar item
-- **E**: Open Creative Inventory
+- **E**: Buka Creative Inventory
+- **X** / **Esc**: Tutup (X) Inventory
+- **Alt** / **C**: Toggle Kursor Bebas / Terkunci
 - **F**: Toggle Fly Mode
-- **T**: Open Chat / Commands (`/time day`, `/time night`, `/fly`, `/tp x y z`, `/save`)
-- **Esc**: Pause menu (settings, save/reset world)
+- **T** atau **/**: Buka Chat / Perintah:
+  - `/x` atau `/close` — Tutup inventory
+  - `/inv` atau `/inventory` — Buka creative inventory
+  - `/clear` atau `/clearinv` — Kosongkan/reset hotbar & chat
+  - `/give <nama_blok>` — Beri blok (cth: `/give diamond`, `/give tnt`)
+  - `/time day` / `/time night` / `/time sunrise` — Ganti waktu
+  - `/fly` — Terbang
+  - `/tp <x> <y> <z>` — Teleportasi
+  - `/save` — Simpan dunia
+- **Esc**: Pause menu (pengaturan FOV, volume, simpan/reset dunia)
 
 ## 🚀 How to Run Locally
 1. Simply double-click `index.html` to open in any web browser, or serve with any static server:

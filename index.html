@@ -166,10 +166,13 @@
       <div class="inventory-panel">
         <div class="inventory-header">
           <h2>CREATIVE INVENTORY</h2>
-          <button id="inventory-close-btn" class="inventory-close">✕</button>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="inventory-clear-btn" class="mc-btn" style="padding: 4px 10px; font-size: 16px; margin: 0; background: #a33;" title="Clear Hotbar (Command: /clear)">🗑️ Clear / Kosongkan</button>
+            <button id="inventory-close-btn" class="inventory-close" title="Close Inventory (Tekan X / E / Esc atau ketik /x)">✕</button>
+          </div>
         </div>
         <div style="font-size: 16px; color: #444; margin-bottom: 10px;">
-          Click any block to place into active hotbar slot:
+          Pilih blok untuk diletakkan di hotbar (Tekan <kbd>X</kbd>, <kbd>E</kbd>, atau <kbd>ESC</kbd> untuk menutup):
         </div>
         <div id="inventory-grid" class="inventory-grid"></div>
       </div>

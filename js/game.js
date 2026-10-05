@@ -311,10 +311,10 @@ class MinecraftGame {
       invGrid.appendChild(slot);
     }
 
-    // Toggle inventory with 'E'
+    // Toggle inventory with 'E' or close with 'X'
     window.addEventListener('keydown', (e) => {
+      if (document.activeElement.tagName === 'INPUT') return;
       if (e.code === 'KeyE') {
-        if (document.activeElement.tagName === 'INPUT') return;
         if (invModal.classList.contains('hidden')) {
           document.exitPointerLock();
           invModal.classList.remove('hidden');
@@ -322,13 +322,47 @@ class MinecraftGame {
           invModal.classList.add('hidden');
           this.renderer.domElement.requestPointerLock();
         }
+      } else if (e.code === 'KeyX' && !invModal.classList.contains('hidden')) {
+        // Pressing X closes inventory
+        invModal.classList.add('hidden');
+        this.renderer.domElement.requestPointerLock();
       }
     });
 
-    document.getElementById('inventory-close-btn').addEventListener('click', () => {
+    const closeInventoryModal = () => {
       invModal.classList.add('hidden');
       this.renderer.domElement.requestPointerLock();
-    });
+    };
+
+    const closeBtn = document.getElementById('inventory-close-btn');
+    if (closeBtn) closeBtn.addEventListener('click', closeInventoryModal);
+
+    // Clear inventory hotbar button
+    const clearBtn = document.getElementById('inventory-clear-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        this.clearInventory();
+      });
+    }
+  }
+
+  // Clear / reset hotbar inventory
+  clearInventory() {
+    this.hotbar = [
+      BlockTypes.GRASS,
+      BlockTypes.DIRT,
+      BlockTypes.STONE,
+      BlockTypes.WOOD_PLANKS,
+      BlockTypes.WOOD_LOG,
+      BlockTypes.BRICK,
+      BlockTypes.GLASS,
+      BlockTypes.TNT,
+      BlockTypes.GLOWSTONE
+    ];
+    this.selectedSlot = 0;
+    this.setupHotbarUI();
+    this.player.updateHeldBlock(this.hotbar[0]);
+    this.showToast('🗑️ Hotbar inventory dikosongkan / direset!');
   }
 
   setupMouseActions() {
@@ -550,10 +584,45 @@ class MinecraftGame {
           } else if (cmd === 'save') {
             this.world.saveToStorage();
             addMessage('World saved to browser storage!', 'command');
-          } else if (cmd === 'clear') {
+          } else if (cmd === 'x' || cmd === 'close') {
+            const invModal = document.getElementById('inventory-modal');
+            invModal.classList.add('hidden');
+            this.renderer.domElement.requestPointerLock();
+            addMessage('Closed inventory / menu', 'command');
+          } else if (cmd === 'inv' || cmd === 'inventory') {
+            const invModal = document.getElementById('inventory-modal');
+            invModal.classList.toggle('hidden');
+            if (!invModal.classList.contains('hidden')) {
+              document.exitPointerLock();
+              addMessage('Opened creative inventory', 'command');
+            } else {
+              this.renderer.domElement.requestPointerLock();
+              addMessage('Closed creative inventory', 'command');
+            }
+          } else if (cmd === 'clear' || cmd === 'clearinv' || cmd === 'ci') {
+            this.clearInventory();
             msgContainer.innerHTML = '';
+            addMessage('Cleared inventory hotbar & chat log!', 'command');
+          } else if (cmd === 'give') {
+            const itemQuery = (parts[1] || '').toLowerCase();
+            let matchedType = null;
+            for (const id in BlockDefs) {
+              const bDef = BlockDefs[id];
+              if (bDef && (bDef.name.toLowerCase().includes(itemQuery) || id === itemQuery)) {
+                matchedType = Number(id);
+                break;
+              }
+            }
+            if (matchedType) {
+              this.hotbar[this.selectedSlot] = matchedType;
+              this.setupHotbarUI();
+              this.player.updateHeldBlock(matchedType);
+              addMessage(`Given ${BlockDefs[matchedType].name} to slot ${this.selectedSlot + 1}`, 'command');
+            } else {
+              addMessage(`Block '${itemQuery}' not found. Try: diamond, tnt, glowstone, gold, obsidian, etc.`, 'system');
+            }
           } else {
-            addMessage(`Unknown command: ${cmd}. Available: /time day|night|sunrise, /fly, /tp X Y Z, /save, /clear`, 'system');
+            addMessage(`Unknown command: ${cmd}. Available: /x, /inv, /clear, /give <block>, /time day|night, /fly, /tp X Y Z, /save`, 'system');
           }
         }
       }
