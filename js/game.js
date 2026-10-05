@@ -305,7 +305,6 @@ class MinecraftGame {
         this.player.updateHeldBlock(type);
         this.showToast(`Selected ${def.name}`);
         invModal.classList.add('hidden');
-        this.renderer.domElement.requestPointerLock();
       });
 
       invGrid.appendChild(slot);
@@ -316,22 +315,18 @@ class MinecraftGame {
       if (document.activeElement.tagName === 'INPUT') return;
       if (e.code === 'KeyE') {
         if (invModal.classList.contains('hidden')) {
-          document.exitPointerLock();
           invModal.classList.remove('hidden');
         } else {
           invModal.classList.add('hidden');
-          this.renderer.domElement.requestPointerLock();
         }
       } else if (e.code === 'KeyX' && !invModal.classList.contains('hidden')) {
         // Pressing X closes inventory
         invModal.classList.add('hidden');
-        this.renderer.domElement.requestPointerLock();
       }
     });
 
     const closeInventoryModal = () => {
       invModal.classList.add('hidden');
-      this.renderer.domElement.requestPointerLock();
     };
 
     const closeBtn = document.getElementById('inventory-close-btn');
@@ -366,12 +361,25 @@ class MinecraftGame {
   }
 
   setupMouseActions() {
+    this.mouseScreenX = window.innerWidth / 2;
+    this.mouseScreenY = window.innerHeight / 2;
+
+    window.addEventListener('mousemove', (e) => {
+      this.mouseScreenX = e.clientX;
+      this.mouseScreenY = e.clientY;
+    });
+
     window.addEventListener('mousedown', (e) => {
       // Don't trigger block actions if clicking on UI modals, buttons, or input boxes
       if (e.target.closest('#pause-screen, #start-screen, #inventory-modal, #chat-input, #cursor-toggle-btn, .hotbar-slot')) {
         return;
       }
       window.SoundManager.ensureContext();
+
+      // If user was dragging camera (dragDistance > 6), ignore mining/placing
+      if (!this.player.isLocked && this.player.dragDistance > 6) {
+        return;
+      }
 
       if (e.button === 0) {
         // Left Click: Dig / Break Block
@@ -381,7 +389,7 @@ class MinecraftGame {
           const hitType = this.targetRaycast.type;
 
           if (hitType === BlockTypes.BEDROCK) {
-            this.showToast('⚠️ Bedrock is indestructible!');
+            this.showToast('⚠️ Bedrock tidak bisa dihancurkan!');
             return;
           }
 
@@ -587,18 +595,11 @@ class MinecraftGame {
           } else if (cmd === 'x' || cmd === 'close') {
             const invModal = document.getElementById('inventory-modal');
             invModal.classList.add('hidden');
-            this.renderer.domElement.requestPointerLock();
             addMessage('Closed inventory / menu', 'command');
           } else if (cmd === 'inv' || cmd === 'inventory') {
             const invModal = document.getElementById('inventory-modal');
             invModal.classList.toggle('hidden');
-            if (!invModal.classList.contains('hidden')) {
-              document.exitPointerLock();
-              addMessage('Opened creative inventory', 'command');
-            } else {
-              this.renderer.domElement.requestPointerLock();
-              addMessage('Closed creative inventory', 'command');
-            }
+            addMessage(invModal.classList.contains('hidden') ? 'Closed creative inventory' : 'Opened creative inventory', 'command');
           } else if (cmd === 'clear' || cmd === 'clearinv' || cmd === 'ci') {
             this.clearInventory();
             msgContainer.innerHTML = '';
@@ -633,22 +634,21 @@ class MinecraftGame {
       if (document.activeElement.tagName === 'INPUT') return;
       if (e.code === 'KeyT' || e.code === 'Slash') {
         e.preventDefault();
-        document.exitPointerLock();
         input.focus();
       }
     });
   }
 
   setupEventListeners() {
-    // Start game button
+    // Start game button: directly hides screen without locking cursor!
     document.getElementById('play-btn').addEventListener('click', () => {
       window.SoundManager.ensureContext();
-      this.renderer.domElement.requestPointerLock();
+      document.getElementById('start-screen').classList.add('hidden');
     });
 
     // Resume button
     document.getElementById('resume-btn').addEventListener('click', () => {
-      this.renderer.domElement.requestPointerLock();
+      document.getElementById('pause-screen').classList.add('hidden');
     });
 
     // Save world button
@@ -740,9 +740,18 @@ class MinecraftGame {
     this.updateTNT(delta);
     this.updateParticles(delta);
 
-    // 4. Raycast block targeting from camera center
-    const rayDir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
-    this.targetRaycast = this.world.raycast(this.camera.position, rayDir, 6.0);
+    // 4. Raycast block targeting (from center when locked, or from mouse pointer when free)
+    let rayDir;
+    if (this.player.isLocked) {
+      rayDir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+    } else {
+      const ndcX = ((this.mouseScreenX || (window.innerWidth / 2)) / window.innerWidth) * 2 - 1;
+      const ndcY = -((this.mouseScreenY || (window.innerHeight / 2)) / window.innerHeight) * 2 + 1;
+      const mouseRay = new THREE.Raycaster();
+      mouseRay.setFromCamera({ x: ndcX, y: ndcY }, this.camera);
+      rayDir = mouseRay.ray.direction;
+    }
+    this.targetRaycast = this.world.raycast(this.camera.position, rayDir, 6.5);
 
     if (this.targetRaycast.hit) {
       this.selectionBox.visible = true;

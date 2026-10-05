@@ -13,11 +13,13 @@ A full-featured 3D voxel sandbox game built with JavaScript, Three.js, and Web A
 - **Save & Load**: Saves your creations to browser `localStorage`.
 
 ## 🕹️ Controls
-- **WASD**: Walk / Move
-- **Space**: Jump (or fly up)
-- **Shift**: Sprint (or fly down)
-- **Left Click**: Mine / Break block / Ignite TNT
-- **Right Click**: Place selected block
+- **Drag Mouse (Klik & Geser)**: Putar pandangan kamera 3D
+- **Kursor**: Bebas & selalu terlihat (tidak terkunci otomatis)
+- **WASD**: Jalan / Bergerak
+- **Space**: Lompat (atau naik saat terbang)
+- **Shift**: Sprint (atau turun saat terbang)
+- **Left Click**: Hancurkan blok / Nyalakan TNT
+- **Right Click**: Pasang blok yang dipilih
 - **1-9 / Scroll Wheel**: Select hotbar item
 - **E**: Buka Creative Inventory
 - **X** / **Esc**: Tutup (X) Inventory

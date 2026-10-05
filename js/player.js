@@ -70,32 +70,18 @@ class PlayerController {
     const status = document.getElementById('cursor-status');
     const badge = document.getElementById('cursor-toggle-btn');
     if (this.isLocked) {
-      if (icon) icon.textContent = '🎯';
-      if (status) status.textContent = 'Kursor: TERKUNCI (Alt/C)';
+      if (icon) icon.textContent = '🔒';
+      if (status) status.textContent = 'Kursor: TERKUNCI';
       if (badge) badge.classList.remove('free');
     } else {
       if (icon) icon.textContent = '🖱️';
-      if (status) status.textContent = 'Kursor: BEBAS (Klik Layar)';
+      if (status) status.textContent = 'Kursor: BEBAS (Drag utk Putar)';
       if (badge) badge.classList.add('free');
     }
   }
 
   setupPointerLock() {
-    // Click on canvas to lock mouse if game has started
-    this.domElement.addEventListener('click', () => {
-      const startScreen = document.getElementById('start-screen');
-      const invModal = document.getElementById('inventory-modal');
-      const pauseScreen = document.getElementById('pause-screen');
-
-      if (!this.isLocked && startScreen.classList.contains('hidden') && invModal.classList.contains('hidden') && pauseScreen.classList.contains('hidden')) {
-        try {
-          const p = this.domElement.requestPointerLock();
-          if (p && p.catch) p.catch(() => {});
-        } catch(e) {}
-      }
-    });
-
-    // Cursor toggle button in top HUD
+    // Note: Automatic locking on click is disabled by user request. Cursor is always free!
     const toggleBtn = document.getElementById('cursor-toggle-btn');
     if (toggleBtn) {
       toggleBtn.addEventListener('click', (e) => {
@@ -106,10 +92,6 @@ class PlayerController {
 
     document.addEventListener('pointerlockchange', () => {
       this.isLocked = (document.pointerLockElement === this.domElement);
-      const startScreen = document.getElementById('start-screen');
-      if (this.isLocked) {
-        startScreen.classList.add('hidden');
-      }
       this.updateCursorHUD();
     });
 
@@ -121,19 +103,27 @@ class PlayerController {
     // Track mouse button for dragging when cursor is free
     this.domElement.addEventListener('mousedown', (e) => {
       this.isMouseDown = true;
+      this.dragStartX = e.clientX;
+      this.dragStartY = e.clientY;
+      this.dragDistance = 0;
     });
 
     window.addEventListener('mouseup', () => {
       this.isMouseDown = false;
     });
 
-    // Mouse movement rotates view (both in locked mode & when dragging or moving in canvas)
+    // Mouse movement rotates view (both in locked mode & when dragging with mouse)
     document.addEventListener('mousemove', (e) => {
-      // Look around if locked OR if dragging with mouse on canvas
+      // In unlocked mode: dragging with mouse rotates view smoothly
       if (!this.isLocked && !this.isMouseDown) return;
 
-      this.yaw -= e.movementX * this.mouseSensitivity;
-      this.pitch -= e.movementY * this.mouseSensitivity;
+      const movementX = e.movementX !== undefined ? e.movementX : 0;
+      const movementY = e.movementY !== undefined ? e.movementY : 0;
+
+      this.dragDistance = (this.dragDistance || 0) + Math.abs(movementX) + Math.abs(movementY);
+
+      this.yaw -= movementX * this.mouseSensitivity;
+      this.pitch -= movementY * this.mouseSensitivity;
 
       // Clamp pitch between -89° and +89°
       const maxPitch = Math.PI / 2 - 0.01;
