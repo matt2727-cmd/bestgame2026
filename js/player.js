@@ -39,6 +39,7 @@ class PlayerController {
     };
 
     this.isLocked = false;
+    this.isMouseDown = false;
     this.footstepTimer = 0;
 
     // 3D Player Hand & Held Item
@@ -53,33 +54,83 @@ class PlayerController {
     this.setupHandModel();
   }
 
+  toggleCursorMode() {
+    if (this.isLocked) {
+      try { document.exitPointerLock(); } catch(e) {}
+    } else {
+      try {
+        const p = this.domElement.requestPointerLock();
+        if (p && p.catch) p.catch(() => {});
+      } catch(e) {}
+    }
+  }
+
+  updateCursorHUD() {
+    const icon = document.getElementById('cursor-icon');
+    const status = document.getElementById('cursor-status');
+    const badge = document.getElementById('cursor-toggle-btn');
+    if (this.isLocked) {
+      if (icon) icon.textContent = '🎯';
+      if (status) status.textContent = 'Kursor: TERKUNCI (Alt/C)';
+      if (badge) badge.classList.remove('free');
+    } else {
+      if (icon) icon.textContent = '🖱️';
+      if (status) status.textContent = 'Kursor: BEBAS (Klik Layar)';
+      if (badge) badge.classList.add('free');
+    }
+  }
+
   setupPointerLock() {
+    // Click on canvas to lock mouse if game has started
     this.domElement.addEventListener('click', () => {
-      if (!this.isLocked && document.getElementById('inventory-modal').classList.contains('hidden')) {
-        this.domElement.requestPointerLock();
+      const startScreen = document.getElementById('start-screen');
+      const invModal = document.getElementById('inventory-modal');
+      const pauseScreen = document.getElementById('pause-screen');
+
+      if (!this.isLocked && startScreen.classList.contains('hidden') && invModal.classList.contains('hidden') && pauseScreen.classList.contains('hidden')) {
+        try {
+          const p = this.domElement.requestPointerLock();
+          if (p && p.catch) p.catch(() => {});
+        } catch(e) {}
       }
     });
+
+    // Cursor toggle button in top HUD
+    const toggleBtn = document.getElementById('cursor-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleCursorMode();
+      });
+    }
 
     document.addEventListener('pointerlockchange', () => {
       this.isLocked = (document.pointerLockElement === this.domElement);
       const startScreen = document.getElementById('start-screen');
-      const pauseScreen = document.getElementById('pause-screen');
-      const invModal = document.getElementById('inventory-modal');
-
       if (this.isLocked) {
         startScreen.classList.add('hidden');
-        pauseScreen.classList.add('hidden');
-        invModal.classList.add('hidden');
-      } else {
-        // Only show pause if start screen isn't showing and inventory isn't open
-        if (startScreen.classList.contains('hidden') && invModal.classList.contains('hidden')) {
-          pauseScreen.classList.remove('hidden');
-        }
       }
+      this.updateCursorHUD();
     });
 
+    document.addEventListener('pointerlockerror', () => {
+      this.isLocked = false;
+      this.updateCursorHUD();
+    });
+
+    // Track mouse button for dragging when cursor is free
+    this.domElement.addEventListener('mousedown', (e) => {
+      this.isMouseDown = true;
+    });
+
+    window.addEventListener('mouseup', () => {
+      this.isMouseDown = false;
+    });
+
+    // Mouse movement rotates view (both in locked mode & when dragging or moving in canvas)
     document.addEventListener('mousemove', (e) => {
-      if (!this.isLocked) return;
+      // Look around if locked OR if dragging with mouse on canvas
+      if (!this.isLocked && !this.isMouseDown) return;
 
       this.yaw -= e.movementX * this.mouseSensitivity;
       this.pitch -= e.movementY * this.mouseSensitivity;
@@ -95,6 +146,26 @@ class PlayerController {
   setupKeyboard() {
     window.addEventListener('keydown', (e) => {
       if (document.activeElement.tagName === 'INPUT') return;
+
+      if (e.code === 'KeyC' || e.code === 'AltLeft' || e.code === 'AltRight') {
+        e.preventDefault();
+        this.toggleCursorMode();
+        return;
+      }
+
+      if (e.code === 'Escape') {
+        const pauseScreen = document.getElementById('pause-screen');
+        const invModal = document.getElementById('inventory-modal');
+        if (!invModal.classList.contains('hidden')) {
+          invModal.classList.add('hidden');
+          return;
+        }
+        pauseScreen.classList.toggle('hidden');
+        if (!pauseScreen.classList.contains('hidden')) {
+          try { document.exitPointerLock(); } catch(err) {}
+        }
+        return;
+      }
 
       switch (e.code) {
         case 'KeyW': this.keys.forward = true; break;

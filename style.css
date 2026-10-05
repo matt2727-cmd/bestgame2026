@@ -29,6 +29,11 @@ html, body {
   background-color: #000;
   font-family: 'VT323', monospace, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #fff;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><polygon points="2,2 2,20 7,15 11,23 14,21 10,13 17,13" fill="%23ffffff" stroke="%23000000" stroke-width="2"/></svg>'), auto;
+}
+
+button, .mc-btn, .hotbar-slot, .inv-slot, #cursor-toggle-btn {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><polygon points="6,2 9,2 9,6 13,6 13,10 17,10 17,14 13,14 13,18 9,18 9,22 6,22 6,18 2,18 2,14 6,14" fill="%23ffd700" stroke="%23000000" stroke-width="1.5"/></svg>'), pointer !important;
 }
 
 #game-container {
@@ -44,7 +49,7 @@ html, body {
   display: block;
 }
 
-/* Crosshair */
+/* Authentic High-Contrast Crosshair */
 #crosshair {
   position: absolute;
   top: 50%;
@@ -53,29 +58,37 @@ html, body {
   height: 20px;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  z-index: 10;
+  z-index: 25;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
 }
 
-#crosshair::before, #crosshair::after {
-  content: '';
-  position: absolute;
-  background: rgba(255, 255, 255, 0.85);
-  mix-blend-mode: difference;
-  box-shadow: 0 0 2px rgba(0,0,0,0.8);
+/* Cursor Mode Badge Button */
+.cursor-badge {
+  background: rgba(20, 20, 25, 0.75);
+  border: 2px solid #55ffff;
+  border-radius: 6px;
+  color: #fff;
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  padding: 8px 14px;
+  text-shadow: 1px 1px 0px #000;
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-#crosshair::before {
-  left: 9px;
-  top: 0;
-  width: 2px;
-  height: 20px;
+.cursor-badge:hover {
+  background: rgba(40, 40, 55, 0.9);
+  border-color: #ffff55;
+  transform: translateY(-2px);
 }
 
-#crosshair::after {
-  left: 0;
-  top: 9px;
-  width: 20px;
-  height: 2px;
+.cursor-badge.free {
+  border-color: #ffaa00;
+  color: #ffdd66;
 }
 
 /* HUD Overlay */

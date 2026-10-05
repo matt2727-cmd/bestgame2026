@@ -333,7 +333,10 @@ class MinecraftGame {
 
   setupMouseActions() {
     window.addEventListener('mousedown', (e) => {
-      if (!this.player.isLocked) return;
+      // Don't trigger block actions if clicking on UI modals, buttons, or input boxes
+      if (e.target.closest('#pause-screen, #start-screen, #inventory-modal, #chat-input, #cursor-toggle-btn, .hotbar-slot')) {
+        return;
+      }
       window.SoundManager.ensureContext();
 
       if (e.button === 0) {
